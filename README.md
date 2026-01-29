@@ -1,120 +1,104 @@
-# LRUD [![Build Status](https://travis-ci.org/bbc/lrud.svg?branch=master)](https://travis-ci.org/bbc/lrud)
+# Codemeta Generator
 
-A spatial navigation library for devices with input via directional controls
+This repository contains a (client-side) web application to generate
+CodeMeta documents (aka. `codemeta.json`).
 
-## Upgrading from V2
+The [CodeMeta initiative](https://github.com/codemeta/codemeta) is a Free and Open Source academic collaboration
+creating a minimal metadata schema for research software and code.
 
-**v3 is a major rewrite, covering many new features. However, it unfortunately breaks some backwards compatibility.**
+The academic community recommands on adding a codemeta.json file in
+the root directory of your repository.
 
-We are currently in the process of writing more detailed docs for an upgrade process. However, the main things to note at the minute at;
+With this linked data metadata file, you can easily declare the authorship,
+include contextual information and link to other research outputs (publications,
+data, etc.).
 
-- changes in events, which ones are emitted and what they are emitted with
-- removal of `grid` in favour of `isIndexAligned` behaviour
+Also, the `codemeta.json` file in your source code is indexed in the
+Software Heritage (SWH) archive, which will improve findability in searches.
 
-## Getting Started
+### References
 
-```bash
-git clone git@github.com:bbc/lrud.git lrud
-cd lrud
-npm install
+- [SWH guidelines](https://www.softwareheritage.org/save-and-reference-research-software/) for research software.
+
+- [SWH blog post](https://www.softwareheritage.org/2019/05/28/mining-software-metadata-for-80-m-projects-and-even-more/) about metadata indexation.
+- [Dan S. Katz's blog post](https://danielskatzblog.wordpress.com/2017/09/25/software-heritage-and-repository-metadata-a-software-citation-solution/) about including
+ metadata in your repository.
+- FORCE11's Software Citation Implementation WG [repository](https://github.com/force11/force11-sciwg)
+- RDA & FORCE11's joint Software Source Code Identification WG
+   [repository](https://github.com/force11/force11-rda-scidwg)
+
+## Specifications
+
+### Use case
+
+1. create a complete codemeta.json file from scratch
+2. aggregate existing information and add complementary information to
+a codemeta.json file
+
+### Functionalities
+
+- helpers while completing the form, for example a reference list of spdx
+  licenses
+- a validation mechanism after submission
+- the possibility to use all the codeMeta terms and schema.org terms
+- accessible from multiple platforms (web browsers or OS)
+- (extra) the possibility to correct the output after validation as part
+  of the creation process
+
+This tool was initially prepared for the [FORCE19 Hackathon](https://github.com/force11/force11-rda-scidwg/tree/master/hackathon/FORCE2019).
+
+
+## Code contributions.
+
+This section only applies to developers who want to contribute to the Codemeta Generator.
+If you only want to use it, you can use
+[the hosted version](https://codemeta.github.io/codemeta-generator/) instead.
+
+### Code guidelines
+
+This application is designed to work on popular modern browsers (Firefox,
+Chromium/Google Chrome, Edge, Safari). Check [Caniuse](https://caniuse.com/)
+for availability of features for these browsers.
+
+To keep the architecture simple, we serve javascript files directly to
+browsers, without a compiler or transpiler; and do not use third-party
+dependencies for now.
+
+### Running local changes
+
+To run Codemeta Generator, you just need an HTTP server serving the
+files (nginx, apache2, etc.).
+
+The simplest way is probably to use Python's HTTP server:
+
+```
+git clone https://github.com/codemeta/codemeta-generator
+cd codemeta-generator
+python3 -m http.server
 ```
 
-Lrud is written in [Typescript](https://www.typescriptlang.org/) and makes use of [mitt](https://github.com/developit/mitt).
+then open [http://localhost:8000/](http://localhost:8000/) in your web browser.
 
-## Usage
+### Automatic testing
 
-```bash
-npm install lrud
+In addition to manual testing, we have automated tests to check for bugs
+quickly, using [Cypress](https://www.cypress.io/).
+
+To run them, first install Cypress:
+
+```
+sudo apt install npm  # or the equivalent on your system
+npm install cypress
+$(npm bin)/cypress install
 ```
 
-```js
-const { Lrud } = require('Lrud')
+Then, run the tests:
 
-// create an instance, register some nodes and assign a default focus
-var navigation = new Lrud()
-navigation
-  .registerNode('root', { orientation: 'vertical' })
-  .registerNode('item-a', { parent: 'root', isFocusable: true })
-  .registerNode('item-b', { parent: 'root', isFocusable: true })
-  .assignFocus('item-a')
-
-// handle a key event
-document.addEventListener('keypress', (event) => {
-  navigation.handleKeyEvent(event)
-});
-
-// Lrud will output an event when it handles a move
-navigation.on('move', (moveEvent) => {
-  myApp.doSomethingOnNodeFocus(moveEvent.enter)
-})
+```
+$(npm bin)/cypress run
 ```
 
-See [usage docs](./docs/usage.md) for details full API details.
 
-For more "full" examples, covering common use cases, check [the recipes](./docs/recipes.md)
+## Contributed by
 
-## Running the tests
-
-All code is written in Typescript, so we make use of a `tsconfig.json` and `jest.config.js` to ensure tests run correctly.
-
-Test files are split up fairly arbitrarily, aiming to have larger sets of tests broken into their own file. 
-
-```bash
-npm test
-```
-
-To run a specific test file, use `npx jest` from the project root.
-
-```bash
-npx jest src/lrud.test.js
-```
-
-You can also run all the tests with verbose output. This is useful for listing out test scenarios to ensure that behaviour is covered.
-
-```bash
-npm run test:verbose
-```
-
-You can also run all the tests with coverage output
-
-```bash
-npm run test:coverage
-```
-
-Several of the tests have associated diagrams, in order to better explain what is being tested. These can be found in `./docs/test-diagrams`.
-
-We also have a specific test file (`src/build.test.js`) in order to ensure that we haven't broken the Typescript/rollup.js build.
-
-## Versioning
-
-```bash
-npm version <patch:minor:major>
-npm publish
-```
-
-## Built with
-
-- [Typescript](https://www.typescriptlang.org/)
-- [rollup.js](https://rollupjs.org/)
-- [mitt](https://github.com/developit/mitt)
-
-## Inspiration
-
-* [BBC - TV Application Layer (TAL)](http://bbc.github.io/tal/widgets/focus-management.html)
-* [Netflix - Pass the Remote](https://medium.com/netflix-techblog/pass-the-remote-user-input-on-tv-devices-923f6920c9a8)
-* [Mozilla - Implementing TV remote control navigation](https://developer.mozilla.org/en-US/docs/Mozilla/Firefox_OS_for_TV/TV_remote_control_navigation)
-
-## Alternatives
-
-* [tal](https://github.com/bbc/tal)
-* [react-tv-navigation](https://github.com/react-tv/react-tv-navigation)
-* [react-key-navigation](https://github.com/dead/react-key-navigation)
-* [js-spatial-navigation](https://github.com/luke-chang/js-spatial-navigation)
-
-# License
-
-
-LRUD is part of the BBC TAL libraries, and available to everyone under the terms of the Apache 2 open source licence (Apache-2.0). Take a look at the LICENSE file in the code.
-
-Copyright (c) 2018 BBC
-
+![Image description](https://annex.softwareheritage.org/public/logo/software-heritage-logo-title-motto.svg)

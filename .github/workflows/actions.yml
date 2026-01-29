@@ -1,29 +1,36 @@
-name: Node.js CI
-
-on:
-  push:
-    branches: [ main, main ]
-  pull_request:
-    branches: [ main, main ]
+name: CI
+on: [push, pull_request]
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js 14
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "14"
-          # Removed cache: "yarn" because yarn.lock is missing. 
-          # You can re-enable this once a yarn.lock file is committed.
+          node-version: '10'
+
+      - name: Install apt packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgconf-2-4
+
+      - name: Cache Cypress binary
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache
+          key: ${{ runner.os }}-cypress-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-cypress-
 
       - name: Install dependencies
-        run: yarn
+        run: |
+          npm install cypress
+          $(npm bin)/cypress install
 
-      - name: Run tests
-        run: npm test
+      - name: Run Cypress tests
+        run: $(npm bin)/cypress run
 
