@@ -12,7 +12,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: ['12', '14', '16']
+        node-version: ["node", "11", "10", "8"]
 
     steps:
       - name: Checkout repository
@@ -24,26 +24,8 @@ jobs:
           node-version: ${{ matrix.node-version }}
 
       - name: Install dependencies
-        run: npm install
+        run: npm install --legacy-peer-deps
 
       - name: Run tests
         run: npm test
-
-      - name: Coveralls
-        if: success()
-        uses: coverallsapp/github-action@v2
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          flag-name: run-${{ matrix.node-version }}
-          parallel: true
-
-  finish:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Coveralls Finished
-        uses: coverallsapp/github-action@v2
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          parallel-finished: true
 

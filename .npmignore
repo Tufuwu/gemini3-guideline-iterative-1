@@ -1,8 +1,5 @@
-.babelrc
-.editorconfig
-.eslintignore
-.eslintrc
-.github
-coverage/
-examples/
+src/
 test/
+.babelrc
+.eslintrc.json
+.travis.yml
