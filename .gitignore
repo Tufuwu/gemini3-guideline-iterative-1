@@ -1,28 +1,17 @@
-env.sh
-env.sh.backup
-*~
-tmp/
-data/
-!dashboard/data
-!src/tests/integration/data
-.env/
-nyc-db*.sql
-ansible/*.retry
-ansible/credentials
-ansible/hosts
+*.py[co]
+*.mo
 
-server/postgrest
-server/*.tar.xz
-server/*.html
-!server/index.html
+*.egg-info/
+*.egg
+.eggs/
 
-docker/sqlpad
-docker/postgres-data
-postgres-data
+.cache/
+.coverage
+.state
+.tox/
 
-modules/hpd-complaints/*.csv
-
-src/.pytest_cache/
-
-*.bz2
-.DS_Store
+docs/_build/
+build/
+dist/*.tar.gz
+dist/*.whl
+htmlcov/
