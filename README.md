@@ -1,206 +1,152 @@
-# i18n-zipcodes [![Build Status](https://travis-ci.org/sarcadass/i18n-zipcodes.svg?branch=master)](https://travis-ci.org/sarcadass/i18n-zipcodes) [![codecov](https://codecov.io/gh/sarcadass/i18n-zipcodes/branch/master/graph/badge.svg)](https://codecov.io/gh/sarcadass/i18n-zipcodes)
+# aria-api
 
-International zipcodes validator in Javascript, based on Regex for Node.js and the browser.
+[WAI-ARIA](https://www.w3.org/TR/wai-aria/) allows websites to provide
+additional semantics to assistive technologies. Roles and attributes can be set
+either explicitly (e.g. `<span role="link">click me</span>`) or implicitly
+(`<a href="//example.com">click me</a>` implicitly has the role "link").
+
+While the implicit mappings make authoring accessible websites simpler, it
+makes the task of calculating an element's role and attributes more
+complicated. This library takes care of exactly that.
 
 ## Install
 
-### For Node.js:
-```sh
-$ npm install i18n-zipcodes
-```
+    npm install aria-api
 
-### For the browser:
-* Download the script in the `dist` folder
+This installation method works best if you use tools like webpack or
+browserify. There is also an UMD build included as `dist/aria.js`.
 
+# Usage
 
-## Usage
+    var aria = require('aria-api'):
 
-```js
-i18nZipcodes(countryCode: string, zipCode: string): boolean
-// countryCode param is case insensitive
-```
+    aria.querySelector('landmark').forEach(landmark => {
+        if (!aria.matches(landmark, ':hidden')) {
+            var role = aria.getRole(landmark);
+            var name = aria.getName(landmark);
+            console.log(role, name);
+        }
+    });
 
-### For Node.js
-```js
-// CommonJS Syntax
-const i18nZipcodes = require('i18n-zipcodes');
-// or ES Syntax
-import i18nZipcodes from 'i18n-zipcodes';
+## getRole(element)
 
-i18nZipcodes('US', '90210'); // true
+Calculate an element's role.
 
-i18nZipcodes('fr', '5632'); // false
-```
+Note that this will return only the most specific role. If you want to know
+whether an element *has* a role, use `matches()` instead.
 
-### For the browser
-```html
-<script src="i18n-zipcodes.min.js"></script>
-<script>
-    console.log(i18nZipcodes('fr', '75014')); // true
-</script>
-```
+## getAttribute(element, attribute)
 
+Calculate the value of an element's attribute (state or property). The
+"aria-" prefix is not included in the attribute name.
 
-## 115 Countries supported
-Country codes use the [ISO 3166-1](https://en.wikipedia.org/wiki/ISO_3166-1) format.
+## getName(element)
 
-### A
-- 🇦🇩 (`AD`) Andorra
-- 🇦🇲 (`AM`) Armenia
-- 🇦🇷 (`AR`) Argentina
-- 🇦🇸 (`AS`) American Samoa
-- 🇦🇹 (`AT`) Austria
-- 🇦🇺 (`AU`) Australia
-- 🇦🇿 (`AZ`) Azerbaijan
+Calculate an element's name according to the [Accessible Name and Description
+Computation](https://www.w3.org/TR/accname-aam-1.1/#mapping_additional_nd_te).
 
-### B
-- 🇧🇦 (`BA`) Bosnia and Herzegovina
-- 🇧🇩 (`BD`) Bangladesh
-- 🇧🇪 (`BE`) Belgium
-- 🇧🇬 (`BG`) Bulgaria
-- 🇧🇯 (`BJ`) Benin
-- 🇧🇲 (`BM`) Bermuda
-- 🇧🇳 (`BN`) Brunei
-- 🇧🇷 (`BR`) Brazil
-- 🇧🇾 (`BY`) Belarus
+## getDescription(element)
 
-### C
-- 🇨🇦 (`CA`) Canada
-- 🇨🇭 (`CH`) Switzerland
-- 🇨🇳 (`CN`) China
-- 🇨🇺 (`CU`) Cuba
-- 🇨🇽 (`CX`) Christmas Island
-- 🇨🇾 (`CY`) Cyprus
-- 🇨🇿 (`CZ`) Czechia
+Calculate an element's description according to the [Accessible Name and
+Description Computation](https://www.w3.org/TR/accname-aam-1.1/#mapping_additional_nd_te).
 
-### D
-- 🇩🇪 (`DE`) Germany
-- 🇩🇰 (`DK`) Denmark
-- 🇩🇿 (`DZ`) Algeria
+## matches(element, selector)
 
-### E
-- 🇪🇪 (`EE`) Estonia
-- 🇪🇸 (`ES`) Spain
+Similar to [Element.matches()](https://developer.mozilla.org/en-US/docs/Web/API/Element/matches),
+this allows to check whether an element matches a selector. A selector can be
+any of the following:
 
-### F
-- 🇫🇮 (`FI`) Finland
-- 🇫🇲 (`FM`) Micronesia
-- 🇫🇴 (`FO`) Faroe Islands
-- 🇫🇷 (`FR`) France
+-   `role`: Matches if the element has the specified role. This also works for
+    hierarchical roles such as "landmark".
+-   `:attribute`: Matches if the attribute is truthy. The "aria-" prefix is not
+    included in the attribute name.
+-   `[attribute="value"]`: Matches if the value of the attribute converted to
+    string equals the specified value.
 
-### G
-- 🇬🇪 (`GE`) Georgia
-- 🇬🇫 (`GF`) French Guiana
-- 🇬🇱 (`GL`) Greenland
-- 🇬🇵 (`GP`) Guadeloupe
-- 🇬🇷 (`GR`) Greece
-- 🇬🇹 (`GT`) Guatemala
-- 🇬🇺 (`GU`) Guam
-- 🇬🇼 (`GW`) Guinea-Bissau
+Note that combinations of selectors are **not supported** (e.g. `main link`,
+`link:hidden`, `:not(:hidden)`).  The single exception to this rule are
+comma-separated lists of roles, e.g. `link,button`.
 
-### H
-- 🇭🇷 (`HR`) Croatia
-- 🇭🇺 (`HU`) Hungary
+## querySelector(element, selector)
 
-### I
-- 🇮🇨 (`IC`) Canary Islands
-- 🇮🇩 (`ID`) Indonesia
-- 🇮🇪 (`IE`) Ireland
-- 🇮🇱 (`IL`) Israel
-- 🇮🇳 (`IN`) Inde
-- 🇮🇸 (`IS`) Iceland
-- 🇮🇹 (`IT`) Italy
+Similar to [Element.querySelector()](https://developer.mozilla.org/en-US/docs/Web/API/Element/querySelector).
+See `matches()` for details.
 
-### J
-- 🇯🇵 (`JP`) Japan
+## querySelectorAll(element, selector)
 
-### K
-- 🇰🇪 (`KE`) Kenya
-- 🇰🇬 (`KG`) Kyrgyzstan
-- 🇰🇷 (`KR`) South Korea
-- 🇰🇼 (`KW`) Kuwait
-- 🇰🇿 (`KZ`) Kazakhstan
+Similar to [Element.querySelectorAll()](https://developer.mozilla.org/en-US/docs/Web/API/Element/querySelectorAll).
+See `matches()` for details.
 
-### L
-- 🇱🇮 (`LI`) Liechtenstein
-- 🇱🇹 (`LT`) Lithuania
-- 🇱🇺 (`LU`) Luxembourg
-- 🇱🇻 (`LV`) Latvia
+## closest(element, selector)
 
-### M
-- 🇲🇦 (`MA`) Morocco
-- 🇲🇩 (`MD`) Moldova
-- 🇲🇪 (`ME`) Montenegro
-- 🇲🇬 (`MG`) Madagascar
-- 🇲🇭 (`MH`) Marshall Islands
-- 🇲🇰 (`MK`) North Macedonia
-- 🇲🇲 (`MM`) Myanmar
-- 🇲🇳 (`MN`) Mongolia
-- 🇲🇵 (`MP`) Northern Mariana Islands
-- 🇲🇶 (`MQ`) Martinique
-- 🇲🇹 (`MT`) Malta
-- 🇲🇻 (`MV`) Maldives
-- 🇲🇽 (`MX`) Mexico
-- 🇲🇾 (`MY`) Malaysia
-- 🇲🇿 (`MZ`) Mozambique
+Similar to [Element.closest()](https://developer.mozilla.org/en-US/docs/Web/API/Element/closest).
+See `matches()` for details.
 
-### N
-- 🇳🇱 (`NL`) Netherlands
-- 🇳🇴 (`NO`) Norway
-- 🇳🇿 (`NZ`) New Zealand
+## getParentNode(node)
 
-### P
-- 🇵🇭 (`PH`) Philippines
-- 🇵🇰 (`PK`) Pakistan
-- 🇵🇱 (`PL`) Poland
-- 🇫🇷 (`PM`) Saint Pierre and Miquelon
-- 🇵🇷 (`PR`) Puerto Rico
-- 🇵🇸 (`PS`) Palestine
-- 🇵🇹 (`PT`) Portugal
-- 🇵🇼 (`PW`) Palau
+Similar to [Node.parentNode](https://developer.mozilla.org/en-US/docs/Web/API/Node/parentNode),
+but takes `aria-owns` into account.
 
-### R
-- 🇷🇪 (`RE`) Réunion
-- 🇷🇴 (`RO`) Romania
-- 🇷🇸 (`RS`) Serbia
-- 🇷🇺 (`RU`) Russian Federation
+## getChildNodes(node)
 
-### S
-- 🇸🇦 (`SA`) Saudi Arabia
-- 🇸🇩 (`SD`) Sudan
-- 🇸🇪 (`SE`) Sweden
-- 🇸🇬 (`SG`) Singapore
-- 🇸🇮 (`SI`) Slovenia
-- 🇸🇰 (`SK`) Slovakia
-- 🇸🇲 (`SM`) San Marino
-- 🇸🇿 (`SZ`) Swaziland
+Similar to [Node.childNodes](https://developer.mozilla.org/en-US/docs/Web/API/Node/childNodes),
+but takes `aria-owns` into account.
 
-### T
-- 🇹🇭 (`TH`) Thailand
-- 🇹🇯 (`TJ`) Tajikistan
-- 🇹🇲 (`TM`) Turkmenistan
-- 🇹🇳 (`TN`) Tunisia
-- 🇹🇷 (`TR`) Turkey
-- 🇹🇼 (`TW`) Taiwan
+# What is this for?
 
-### U
-- 🇺🇦 (`UA`) Ukraine
-- 🇬🇧 (`UK`) United Kingdom
-- 🇺🇸 (`US`) United States of America
-- 🇺🇾 (`UY`) Uruguay
-- 🇺🇿 (`UZ`) Uzbekistan
+First of all, I thought that something like this should exist. I currently use
+it for [a11y-outline](https://github.com/xi/a11y-outline/), a web extension
+that generates outlines based on WAI-ARIA roles.
 
-### V
-- 🇻🇪 (`VE`) Venezuela
-- 🇻🇮 (`VI`) Virgin Islands (U.S.)
-- 🇻🇳 (`VN`) Viet Nam
+That said, this is what I think it could also be used for:
 
-### X
-- 🇽🇰 (`XK`) Kosovo
+-   Providing features based on the additional information provided by ARIA,
+    e.g. landmark navigation.
+-   Tools helping developers with improving accessibility.
 
-### Y
-- (`YU`) Yugoslavia
+# Implemented standards
 
-### Z
-- 🇿🇦 (`ZA`) South Africa
-- 🇿🇲 (`ZM`) Zambia
+-   [Accessible Rich Internet Applications 1.1](https://www.w3.org/TR/wai-aria-1.1/)
+-   [Core Accessibility API Mappings 1.1](https://www.w3.org/TR/core-aam-1.1/)
+-   [HTML Accessibility API Mappings 1.0](https://www.w3.org/TR/html-aam-1.0/)
+-   [WAI-ARIA Graphics Module 1.0](https://www.w3.org/TR/graphics-aria-1.0/)
+-   [Digital Publishing WAI-ARIA Module 1.0](https://www.w3.org/TR/dpub-aria-1.0/)
+-   [Accessible Name and Description Computation 1.1](https://www.w3.org/TR/accname-1.1/)
+
+I try to update the code whenever a new version of these specs becomes a
+recommendation.
+
+# Notes
+
+-   This is a pet project. I do not have the time to do extensive testing and
+    may skip some details now and then. I am happy to receive bug reports and
+    pull requests though.
+-   The standards are still in a very rough state. Many things are
+    unclear/undecided and therefore no browser really implements them. So
+    naturally, this library cannot really implement the standards either.
+-   This library does not do any validity checks. Invalid attributes or roles
+    will not produce any warnings.
+-   In order to calculate the "hidden" attribute,
+    [Window.getComputedStyle()](https://developer.mozilla.org/en-US/docs/Web/API/Window/getComputedStyle)
+    is called. This only seems to return reliable values if the element is
+    attached to `document`.
+-   Due to security restrictions it is not generally possible to inspect the
+    content of iframes, so they are ignored.
+
+# Related projects
+
+-   [Visual ARIA Bookmarklet](http://whatsock.com/training/matrices/visual-aria.htm):
+    Displays role, name, and description in any website. Maintained by one of
+    the editors of the [accname]() spec.
+-   [axe-core](https://github.com/dequelabs/axe-core/) and
+    [Accessibility Developer Tools](https://github.com/GoogleChrome/accessibility-developer-tools):
+    These are libraries for accessibility testing. They solve many of the same
+    issues as this library internally.
+-   [ARIA Query](https://github.com/A11yance/aria-query):
+    Information from the ARIA spec as JavaScript structures.
+-   [Accessibility Object Model](https://wicg.github.io/aom/):
+    Draft spec for exposing the accessibility tree to JavaScript.
+-   [chrome.automation](https://developer.chrome.com/extensions/automation):
+    A propriatary API that exposes the accessibility tree to JavaScript.
+-   [babelacc](https://xi.github.io/babelacc/):
+    A tool to compare the output of different libraries.
