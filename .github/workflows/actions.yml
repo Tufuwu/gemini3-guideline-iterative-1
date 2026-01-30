@@ -1,27 +1,32 @@
-name: Node.js CI
+name: CI
 
 on:
   push:
-    branches: [ "main", "main" ]
+    branches: [ main, main ]
   pull_request:
-    branches: [ "main", "main" ]
+    branches: [ main, main ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
-    strategy:
-      matrix:
-        node-version: ["latest", "20", "18"]
-
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - name: Use Node.js ${{ matrix.node-version }}
+      - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: 'lts/*'
 
-      - run: npm install
-      - run: npm test
+      - name: Install dependencies
+        run: |
+          npm install -g codecov
+          npm install boolbase nth-check htmlparser2
+          npm install tape tap-spec istanbul
+
+      - name: Run scripts
+        run: |
+          npm run coverage
+          codecov
 
