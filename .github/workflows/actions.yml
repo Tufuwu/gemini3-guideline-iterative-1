@@ -12,10 +12,10 @@ jobs:
 
     strategy:
       matrix:
-        node-version: ["node", "11", "10", "8"]
+        node-version: [node] # 'node' is the GitHub Actions equivalent for 'stable'
 
     steps:
-      - name: Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Use Node.js ${{ matrix.node-version }}
@@ -24,8 +24,8 @@ jobs:
           node-version: ${{ matrix.node-version }}
 
       - name: Install dependencies
-        run: npm install --legacy-peer-deps
+        run: npm install
 
       - name: Run tests
-        run: npm test
+        run: npm run test
 

@@ -1,5 +1,2 @@
-src/
-test/
-.babelrc
-.eslintrc.json
-.travis.yml
+.idea
+node_modules
