@@ -2,30 +2,29 @@ name: Node.js CI
 
 on:
   push:
-    branches: [ main, main ]
+    branches: [ "main", "main" ]
   pull_request:
-    branches: [ main, main ]
+    branches: [ "main", "main" ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
-    strategy:
-      matrix:
-        node-version: [node] # 'node' is the GitHub Actions equivalent for 'stable'
-
     steps:
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Use Node.js ${{ matrix.node-version }}
+      - name: Use Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: "node"
 
       - name: Install dependencies
         run: npm install
 
       - name: Run tests
-        run: npm run test
+        run: npm test
+
+      - name: Build project
+        run: npm run build
 
