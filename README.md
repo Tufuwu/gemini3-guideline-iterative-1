@@ -1,151 +1,104 @@
-# serve-index
+# Codemeta Generator
 
-[![NPM Version][npm-image]][npm-url]
-[![NPM Downloads][downloads-image]][downloads-url]
-[![Linux Build Status][ci-image]][ci-url]
-[![Windows Build][appveyor-image]][appveyor-url]
-[![Coverage Status][coveralls-image]][coveralls-url]
+This repository contains a (client-side) web application to generate
+CodeMeta documents (aka. `codemeta.json`).
 
-  Serves pages that contain directory listings for a given path.
+The [CodeMeta initiative](https://github.com/codemeta/codemeta) is a Free and Open Source academic collaboration
+creating a minimal metadata schema for research software and code.
 
-## Install
+The academic community recommands on adding a codemeta.json file in
+the root directory of your repository.
 
-This is a [Node.js](https://nodejs.org/en/) module available through the
-[npm registry](https://www.npmjs.com/). Installation is done using the
-[`npm install` command](https://docs.npmjs.com/getting-started/installing-npm-packages-locally):
+With this linked data metadata file, you can easily declare the authorship,
+include contextual information and link to other research outputs (publications,
+data, etc.).
 
-```sh
-$ npm install serve-index
+Also, the `codemeta.json` file in your source code is indexed in the
+Software Heritage (SWH) archive, which will improve findability in searches.
+
+### References
+
+- [SWH guidelines](https://www.softwareheritage.org/save-and-reference-research-software/) for research software.
+
+- [SWH blog post](https://www.softwareheritage.org/2019/05/28/mining-software-metadata-for-80-m-projects-and-even-more/) about metadata indexation.
+- [Dan S. Katz's blog post](https://danielskatzblog.wordpress.com/2017/09/25/software-heritage-and-repository-metadata-a-software-citation-solution/) about including
+ metadata in your repository.
+- FORCE11's Software Citation Implementation WG [repository](https://github.com/force11/force11-sciwg)
+- RDA & FORCE11's joint Software Source Code Identification WG
+   [repository](https://github.com/force11/force11-rda-scidwg)
+
+## Specifications
+
+### Use case
+
+1. create a complete codemeta.json file from scratch
+2. aggregate existing information and add complementary information to
+a codemeta.json file
+
+### Functionalities
+
+- helpers while completing the form, for example a reference list of spdx
+  licenses
+- a validation mechanism after submission
+- the possibility to use all the codeMeta terms and schema.org terms
+- accessible from multiple platforms (web browsers or OS)
+- (extra) the possibility to correct the output after validation as part
+  of the creation process
+
+This tool was initially prepared for the [FORCE19 Hackathon](https://github.com/force11/force11-rda-scidwg/tree/master/hackathon/FORCE2019).
+
+
+## Code contributions.
+
+This section only applies to developers who want to contribute to the Codemeta Generator.
+If you only want to use it, you can use
+[the hosted version](https://codemeta.github.io/codemeta-generator/) instead.
+
+### Code guidelines
+
+This application is designed to work on popular modern browsers (Firefox,
+Chromium/Google Chrome, Edge, Safari). Check [Caniuse](https://caniuse.com/)
+for availability of features for these browsers.
+
+To keep the architecture simple, we serve javascript files directly to
+browsers, without a compiler or transpiler; and do not use third-party
+dependencies for now.
+
+### Running local changes
+
+To run Codemeta Generator, you just need an HTTP server serving the
+files (nginx, apache2, etc.).
+
+The simplest way is probably to use Python's HTTP server:
+
+```
+git clone https://github.com/codemeta/codemeta-generator
+cd codemeta-generator
+python3 -m http.server
 ```
 
-## API
+then open [http://localhost:8000/](http://localhost:8000/) in your web browser.
 
-```js
-var serveIndex = require('serve-index')
+### Automatic testing
+
+In addition to manual testing, we have automated tests to check for bugs
+quickly, using [Cypress](https://www.cypress.io/).
+
+To run them, first install Cypress:
+
+```
+sudo apt install npm  # or the equivalent on your system
+npm install cypress
+$(npm bin)/cypress install
 ```
 
-### serveIndex(path, options)
+Then, run the tests:
 
-Returns middlware that serves an index of the directory in the given `path`.
-
-The `path` is based off the `req.url` value, so a `req.url` of `'/some/dir`
-with a `path` of `'public'` will look at `'public/some/dir'`. If you are using
-something like `express`, you can change the URL "base" with `app.use` (see
-the express example).
-
-#### Options
-
-Serve index accepts these properties in the options object.
-
-##### filter
-
-Apply this filter function to files. Defaults to `false`. The `filter` function
-is called for each file, with the signature `filter(filename, index, files, dir)`
-where `filename` is the name of the file, `index` is the array index, `files` is
-the array of files and `dir` is the absolute path the file is located (and thus,
-the directory the listing is for).
-
-##### hidden
-
-Display hidden (dot) files. Defaults to `false`.
-
-##### icons
-
-Display icons. Defaults to `false`.
-
-##### stylesheet
-
-Optional path to a CSS stylesheet. Defaults to a built-in stylesheet.
-
-##### template
-
-Optional path to an HTML template or a function that will render a HTML
-string. Defaults to a built-in template.
-
-When given a string, the string is used as a file path to load and then the
-following tokens are replaced in templates:
-
-  * `{directory}` with the name of the directory.
-  * `{files}` with the HTML of an unordered list of file links.
-  * `{linked-path}` with the HTML of a link to the directory.
-  * `{style}` with the specified stylesheet and embedded images.
-
-When given as a function, the function is called as `template(locals, callback)`
-and it needs to invoke `callback(error, htmlString)`. The following are the
-provided locals:
-
-  * `directory` is the directory being displayed (where `/` is the root).
-  * `displayIcons` is a Boolean for if icons should be rendered or not.
-  * `fileList` is a sorted array of files in the directory. The array contains
-    objects with the following properties:
-    - `name` is the relative name for the file.
-    - `stat` is a `fs.Stats` object for the file.
-  * `path` is the full filesystem path to `directory`.
-  * `style` is the default stylesheet or the contents of the `stylesheet` option.
-  * `viewName` is the view name provided by the `view` option.
-
-##### view
-
-Display mode. `tiles` and `details` are available. Defaults to `tiles`.
-
-## Examples
-
-### Serve directory indexes with vanilla node.js http server
-
-```js
-var finalhandler = require('finalhandler')
-var http = require('http')
-var serveIndex = require('serve-index')
-var serveStatic = require('serve-static')
-
-// Serve directory indexes for public/ftp folder (with icons)
-var index = serveIndex('public/ftp', {'icons': true})
-
-// Serve up public/ftp folder files
-var serve = serveStatic('public/ftp')
-
-// Create server
-var server = http.createServer(function onRequest(req, res){
-  var done = finalhandler(req, res)
-  serve(req, res, function onNext(err) {
-    if (err) return done(err)
-    index(req, res, done)
-  })
-})
-
-// Listen
-server.listen(3000)
+```
+$(npm bin)/cypress run
 ```
 
-### Serve directory indexes with express
 
-```js
-var express    = require('express')
-var serveIndex = require('serve-index')
+## Contributed by
 
-var app = express()
-
-// Serve URLs like /ftp/thing as public/ftp/thing
-// The express.static serves the file contents
-// The serveIndex is this module serving the directory
-app.use('/ftp', express.static('public/ftp'), serveIndex('public/ftp', {'icons': true}))
-
-// Listen
-app.listen(3000)
-```
-
-## License
-
-[MIT](LICENSE). The [Silk](http://www.famfamfam.com/lab/icons/silk/) icons
-are created by/copyright of [FAMFAMFAM](http://www.famfamfam.com/).
-
-[appveyor-image]: https://img.shields.io/appveyor/ci/dougwilson/serve-index/master.svg?label=windows
-[appveyor-url]: https://ci.appveyor.com/project/dougwilson/serve-index
-[ci-image]: https://badgen.net/github/checks/expressjs/serve-index/master?label=ci
-[ci-url]: https://github.com/expressjs/serve-index/actions/workflows/ci.yml
-[coveralls-image]: https://img.shields.io/coveralls/expressjs/serve-index/master.svg
-[coveralls-url]: https://coveralls.io/r/expressjs/serve-index?branch=master
-[downloads-image]: https://img.shields.io/npm/dm/serve-index.svg
-[downloads-url]: https://npmjs.org/package/serve-index
-[npm-image]: https://img.shields.io/npm/v/serve-index.svg
-[npm-url]: https://npmjs.org/package/serve-index
+![Image description](https://annex.softwareheritage.org/public/logo/software-heritage-logo-title-motto.svg)
