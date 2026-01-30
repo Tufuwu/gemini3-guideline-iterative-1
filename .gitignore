@@ -1,19 +1,31 @@
+*.bak
+*.egg-info/
+*.log
 *.pyc
-*.sqlite3
-settings_local.py
-settings_local*.py
+*.pyo
+*.tmp
+
 .DS_Store
-node_modules
+.coverage
+.coverage.*
+.done.*
+
+.eggs/
 .idea/
-dist/
-ENV
-venv/
-.vscode/
-jsconfig.json
-airavata_django_portal.egg-info
-# AIRAVATA-2951 package-lock.json files cause the build to fail when deploying to server
-package-lock.json
-# mkdocs
-site/
+.pytest_cache/
 .tox/
-yarn-error.log
+.venv*/
+.settings/
+
+build/
+dist/
+downloads/
+
+__pypackages__/
+__pycache__/
+**/__pycache__/
+
+# -- OWN WORKSPACE: Directory(s), File(s)
+__*/
+__*.txt
+
