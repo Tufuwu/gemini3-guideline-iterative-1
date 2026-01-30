@@ -1,64 +1,32 @@
-name: CI/CD
+name: CI
 
 on:
   push:
     branches:
-      - '*'
-    tags:
-      - '*'
-  pull_request:
-    branches:
-      - '*'
+      - main
 
 jobs:
   build:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+
+      - name: Install Kerberos dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libkrb5-dev
 
       - name: Set up Python 3.8
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.8'
+          python-version: "3.8"
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          python -m pip install pylint pytest
-          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-          python -m pip list
+          pip install tox tox-gh-actions
 
-      - name: Run lint and tests
-        run: |
-          chmod +x lint.sh test.sh
-          ./lint.sh && ./test.sh
-
-      - name: SonarCloud Scan
-        if: github.event_name == 'push' && github.ref_type != 'tag' && github.repository == 'IBM/qpylib'
-        uses: sonarsource/sonarcloud-github-action@master
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-
-      - name: Build package
-        run: |
-          chmod +x build.sh
-          if [[ "${{ github.ref_type }}" == "tag" ]]; then
-            ./build.sh "${{ github.ref_name }}";
-          else
-            ./build.sh "0.0.dev${{ github.run_number }}";
-          fi
-
-      - name: Release
-        if: github.event_name == 'push' && github.ref_type == 'tag'
-        uses: softprops/action-gh-release@v1
-        with:
-          files: |
-            dist/qpylib-${{ github.ref_name }}.tar.gz
-            dist/qpylib-${{ github.ref_name }}-py3-none-any.whl
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Run tox
+        run: tox
 
