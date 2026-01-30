@@ -1,49 +1,39 @@
-Welcome to NEAT-Python's documentation!
-=======================================
+.. pysparkdl documentation master file, created by
+   sphinx-quickstart on Thu Feb 18 16:43:49 2016.
+   You can adapt this file completely to your liking, but it should at least
+   contain the root `toctree` directive.
 
-:abbr:`NEAT (NeuroEvolution of Augmenting Topologies)` is a method developed by Kenneth O. Stanley for evolving arbitrary neural
-networks. NEAT-Python is a pure Python implementation of NEAT, with no dependencies other than the Python standard library.
+Welcome to the Deep Learning Pipelines Python API docs!
+====================================================================================
 
-Currently this library supports Python versions 3.6 through 3.11, as well as PyPy 3.
+Horovod Runner
+---------------
 
-Many thanks to the original authors of this implementation, Cesar Gomes Miguel, Carolina Feher da Silva, and Marcio Lobo Netto!
+.. automodule:: sparkdl
+    :members:
+    :undoc-members:
+    :show-inheritance:
+    :inherited-members:
 
-.. note::
-  Some of the example code has other dependencies. For your convenience there is a conda environment YAML file in the
-  examples directory you can use to set up an environment that will support all of the current examples.
-  TODO: Improve README.md file information for the examples.
+.. automodule:: sparkdl.horovod
+    :members:
+    :undoc-members:
+    :show-inheritance:
+    :inherited-members:
 
-For further information regarding general concepts and theory, please see `Selected Publications
-<http://www.cs.ucf.edu/~kstanley/#publications>`_ on Stanley's website, or his recent `AMA on Reddit
-<https://www.reddit.com/r/IAmA/comments/3xqcrk/im_ken_stanley_artificial_intelligence_professor>`_.
+.. automodule:: sparkdl.horovod.tensorflow.keras
+    :members:
+    :undoc-members:
+    :show-inheritance:
+    :inherited-members:
 
-If you encounter any confusing or incorrect information in this documentation, please open an issue in the `GitHub project
-<https://github.com/CodeReclaimers/neat-python>`_.
+Xgboost for PySpark Pipeline
+----------------------------
+.. automodule:: sparkdl.xgboost
+    :members:
+    :undoc-members:
+    :show-inheritance:
+    :inherited-members:
 
-.. _toc-label:
 
-Contents:
-
-.. toctree::
-   :maxdepth: 2
-
-   neat_overview
-   installation
-   migration
-   config_file
-   xor_example
-   customization
-   activation
-   ctrnn
-   module_summaries
-   genome-interface
-   reproduction-interface
-   glossary
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
 * :ref:`search`
-

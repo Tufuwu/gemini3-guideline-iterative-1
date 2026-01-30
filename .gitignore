@@ -1,31 +1,23 @@
-.coveralls.yml
-docs/_build/**
-_build/**
-cover
-.coverage
-neat-checkpoint-*
-fitness_history.csv
-speciation.csv
-species_fitness.csv
-.mypy_cache
-*~
+*.coverage
+*test_net_cached.pb
+*.class
+*.log
 *.pyc
-*.pyo
-__pycache__/
-*stats*.dat*
+python/.setup.sh
+build/*.jar
 
-# pycharm cache folder
+docs/build
+
+# python
+*.pyc
+docs/_build/
+build/
+dist/
+*.egg-info/
+
+
+# intellij
 .idea/
 
-examples/openai-lander/results/
-examples/openai-walker/results/
-examples/picture2d/*.bin
-examples/picture2d/*.png
-examples/picture2d/rendered/
-venv
-
-*.gv
-*.svg
-build
-dist
-neat_python.egg-info
+# MacOS
+.DS_Store

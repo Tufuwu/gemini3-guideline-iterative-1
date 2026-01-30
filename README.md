@@ -1,43 +1,101 @@
-[![Build Status](https://app.travis-ci.com/CodeReclaimers/neat-python.svg?branch=master)](https://app.travis-ci.com/github/CodeReclaimers/neat-python)
-[![Coverage Status](https://coveralls.io/repos/CodeReclaimers/neat-python/badge.svg?branch=master&service=github)](https://coveralls.io/github/CodeReclaimers/neat-python?branch=master)
-[![Downloads](https://static.pepy.tech/personalized-badge/neat-python?period=total&units=international_system&left_color=grey&right_color=blue&left_text=Downloads)](https://pepy.tech/project/neat-python)
+Deep Learning Pipelines for Apache Spark
+============================================================
+[![Build Status][pkg-build-badge]][pkg-build-link] [![Coverage][pkg-cov-badge]][pkg-cov-link]
 
-## About ##
+  [pkg-build-badge]: https://travis-ci.org/databricks/spark-deep-learning.svg?branch=master
+  [pkg-build-link]: https://travis-ci.org/databricks/spark-deep-learning
+  [pkg-cov-badge]: https://codecov.io/gh/databricks/spark-deep-learning/coverage.svg?branch=master
+  [pkg-cov-link]: https://codecov.io/gh/databricks/spark-deep-learning/branch/master
 
-NEAT (NeuroEvolution of Augmenting Topologies) is a method developed by Kenneth O. Stanley for evolving arbitrary neural
-networks. This project is a pure-Python implementation of NEAT with no dependencies beyond the standard library. It was
-forked from the excellent project by @MattKallada.
+The repo only contains HorovodRunner code for local CI and API docs. To use HorovodRunner for distributed training, please use Databricks Runtime for Machine Learning,
+Visit databricks doc [HorovodRunner: distributed deep learning with Horovod](https://docs.databricks.com/applications/machine-learning/train-model/distributed-training/horovod-runner.html) for details.
 
-For further information regarding general concepts and theory, please see the [publications page](https://www.kenstanley.net/papers) of Stanley's current website.
+To use the previous release that contains Spark Deep Learning Pipelines API, please go to [Spark Packages page](https://spark-packages.org/package/databricks/spark-deep-learning).
 
-`neat-python` is licensed under the [3-clause BSD license](https://opensource.org/licenses/BSD-3-Clause).  It is
-currently only supported on Python 3.6 through 3.14, and pypy3.
 
-## Getting Started ##
+## API Documentation
 
-If you want to try neat-python, please check out the repository, start playing with the examples (`examples/xor` is
-a good place to start) and then try creating your own experiment.
+### class sparkdl.HorovodRunner(\*, np, driver_log_verbosity='all')
+Bases: `object`
 
-The documentation is available on [Read The Docs](http://neat-python.readthedocs.io).
+HorovodRunner runs distributed deep learning training jobs using Horovod.
 
-## Citing ##
+On Databricks Runtime 5.0 ML and above, it launches the Horovod job as a distributed Spark job.
+It makes running Horovod easy on Databricks by managing the cluster setup and integrating with
+Spark.
+Check out Databricks documentation to view end-to-end examples and performance tuning tips.
 
-Here are APA and Bibtex entries you can use to cite this project in a publication. The listed authors are the originators
-and/or maintainers of all iterations of the project up to this point.  If you have contributed and would like your name added 
-to the citation, please submit an issue or email alan@codereclaimers.com.
+The open-source version only runs the job locally inside the same Python process,
+which is for local development only.
 
-APA
-```
-McIntyre, A., Kallada, M., Miguel, C. G., Feher de Silva, C., & Netto, M. L. neat-python [Computer software]
-```
+**NOTE**: Horovod is a distributed training framework developed by Uber.
 
-Bibtex
-```
-@software{McIntyre_neat-python,
-author = {McIntyre, Alan and Kallada, Matt and Miguel, Cesar G. and Feher de Silva, Carolina and Netto, Marcio Lobo},
-title = {{neat-python}}
-}
-```
+* **Parameters**
 
-## Thank you! ##
-Many thanks to the folks who have [cited this repository](https://scholar.google.com/scholar?start=0&hl=en&as_sdt=5,34&sciodt=0,34&cites=15315010889003730796&scipsc=) in their own work. 
+
+    * **np** - number of parallel processes to use for the Horovod job.
+        This argument only takes effect on Databricks Runtime 5.0 ML and above.
+        It is ignored in the open-source version.
+        On Databricks, each process will take an available task slot,
+        which maps to a GPU on a GPU cluster or a CPU core on a CPU cluster.
+        Accepted values are:
+
+        - If <0, this will spawn `-np` subprocesses on the driver node to run Horovod locally.
+          Training stdout and stderr messages go to the notebook cell output, and are also
+          available in driver logs in case the cell output is truncated. This is useful for
+          debugging and we recommend testing your code under this mode first. However, be
+          careful of heavy use of the Spark driver on a shared Databricks cluster.
+          Note that `np < -1` is only supported on Databricks Runtime 5.5 ML and above.
+        - If >0, this will launch a Spark job with `np` tasks starting all together and run the
+          Horovod job on the task nodes.
+          It will wait until `np` task slots are available to launch the job.
+          If `np` is greater than the total number of task slots on the cluster,
+          the job will fail. As of  Databricks Runtime 5.4 ML, training stdout and stderr
+          messages go to the notebook cell output. In the event that the cell output is
+          truncated, full logs are available in stderr stream of task 0 under the 2nd spark
+          job started by HorovodRunner, which you can find in the Spark UI.
+        - If 0, this will use all task slots on the cluster to launch the job.
+          .. warning:: Setting np=0 is deprecated and it will be removed in the next major
+            Databricks Runtime release. Choosing np based on the total task slots at runtime is
+            unreliable due to dynamic executor registration. Please set the number of parallel
+            processes you need explicitly.
+    * **np** - driver_log_verbosity: This argument is only available on Databricks Runtime.
+
+#### run(main, \*\*kwargs)
+Runs a Horovod training job invoking main(\*\*kwargs).
+
+The open-source version only invokes main(\*\*kwargs) inside the same Python process.
+On Databricks Runtime 5.0 ML and above, it will launch the Horovod job based on the
+documented behavior of np.  Both the main function and the keyword arguments are
+serialized using cloudpickle and distributed to cluster workers.
+
+
+* **Parameters**
+
+    
+    * **main** – a Python function that contains the Horovod training code.
+    The expected signature is def main(\*\*kwargs) or compatible forms.
+    Because the function gets pickled and distributed to workers,
+    please change global states inside the function, e.g., setting logging level,
+    and be aware of pickling limitations.
+    Avoid referencing large objects in the function, which might result large pickled data,
+    making the job slow to start.
+
+
+    * **kwargs** – keyword arguments passed to the main function at invocation time.
+
+
+
+* **Returns**
+
+    return value of the main function.
+    With np>=0, this returns the value from the rank 0 process. Note that the returned
+    value should be serializable using cloudpickle.
+
+
+## Releases
+Visit [Github Release Page](https://github.com/databricks/spark-deep-learning/releases) to check the release notes.
+
+
+## License
+* The source code is released under the Apache License 2.0 (see the LICENSE file).
